@@ -10,6 +10,8 @@ module Tweet
     attr_accessor :username, :password
     
     def create_status(status)
+      len = status.length
+      abort "Message limit is 140 characters. You currently have #{len}" if len > 140
       get_credentials!
       resource = RestClient::Resource.new 'http://twitter.com/statuses/update.xml', username, password
       resource.post(:status => status, :source => 'tweetgem', :content_type => 'application/xml', :accept => 'application/xml')
