@@ -1,7 +1,11 @@
 #!/usr/bin/env ruby
 
-abort("Usage: tweet 'command'") unless ARGV.length >= 1
-
-require File.dirname(__FILE__)+'/../lib/tweet'
-
-Tweet.create_status(ARGV.join(' '))
+case ARGV.first
+when nil, "--help", "-h", "help"
+  abort "Usage: tweet STATUS\nRequires a ~/.tweet YAML file with two keys: username and password."
+when "-v", "--version", "version"
+  puts File.read(File.dirname(__FILE__) + "/../tweet.gemspec").split("\n").grep(/version/)
+else
+  require File.dirname(__FILE__)+'/../lib/tweet'
+  Tweet.create_status(ARGV.join(' '))
+end
