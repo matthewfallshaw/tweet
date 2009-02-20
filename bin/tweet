@@ -4,10 +4,12 @@ THIS_FILE = File.symlink?(__FILE__) ? File.readlink(__FILE__) : __FILE__
 require "#{File.dirname(THIS_FILE)}/../lib/tweet"
 
 case ARGV.first
-when nil, "--help", "-h", "help"
+when nil, "--help", "-h"
   abort "Usage: tweet STATUS\nRequires a ~/.tweet YAML file with two keys: username and password."
-when "-v", "--version", "version"
+when "-v", "--version"
   puts Gem.loaded_specs["tweet"].version
+when '-c', '--count'
+  Tweet.create_status(ARGV.join(' '), true)
 else
   Tweet.create_status(ARGV.join(' '))
 end

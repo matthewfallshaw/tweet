@@ -9,8 +9,13 @@ module Tweet
   class << self
     attr_accessor :username, :password
     
-    def create_status(status)
+    def create_status(status, just_count = false)
       len = status.length
+      if just_count
+        puts "Counting... #{len} chars"
+        exit 0 
+      end
+
       abort "Message limit is 140 characters. You currently have #{len}" if len > 140
       get_credentials!
       unless @debug
