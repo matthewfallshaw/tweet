@@ -18,7 +18,10 @@ module Tweet
 
       abort "Message limit is 140 characters. You currently have #{len}" if len > 140
       get_credentials!
-      unless @debug
+
+      if @debug
+        puts "Would have tweeted:", status
+      else
         resource = RestClient::Resource.new 'http://twitter.com/statuses/update.xml', username, password
         resource.post(:status => status, :source => 'tweetgem', :content_type => 'application/xml', :accept => 'application/xml')
       end
