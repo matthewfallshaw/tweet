@@ -13,15 +13,18 @@ module Tweet
       len = status.length
       abort "Message limit is 140 characters. You currently have #{len}" if len > 140
       get_credentials!
-      resource = RestClient::Resource.new 'http://twitter.com/statuses/update.xml', username, password
-      resource.post(:status => status, :source => 'tweetgem', :content_type => 'application/xml', :accept => 'application/xml')
+      unless @debug
+        resource = RestClient::Resource.new 'http://twitter.com/statuses/update.xml', username, password
+        resource.post(:status => status, :source => 'tweetgem', :content_type => 'application/xml', :accept => 'application/xml')
+      end
       puts "#{len} chars" + (len == 140 ? "!\nYou rock!" : '.')
     end
     
     def get_credentials!
       abort "You must create a #{CONFIG_FILE} file to use this CLI." unless File.exist?(CONFIG_FILE)
       config = YAML.load(File.read(CONFIG_FILE)).symbolize_keys
-      @username, @password = config[:username], config[:password]
+      @username, @password, @debug = config[:username], config[:password], config[:debug]
+      warn "  debug mode (not really posting)" if @debug
     end
   end
 end
