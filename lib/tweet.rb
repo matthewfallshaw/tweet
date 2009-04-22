@@ -7,32 +7,33 @@ module Tweet
   CONFIG_FILE = ENV['HOME']+'/.tweet'
   
   class << self
-    attr_accessor :username, :password
-    
-    def create_status(status, just_count = false)
-      len = status.length
-      if just_count
-        puts "Counting... #{len} chars"
-        exit 0 
-      end
+    def count(status)
+      puts "Counting... #{status.length} chars."
+      exit 0 
+    end
 
-      abort "Message limit is 140 characters. You currently have #{len}" if len > 140
-      get_credentials!
+    def create_status(status, source = nil)
+      len = status.length
+      abort "Message limit is 140 characters. You currently have #{len}." if len > 140
 
       if @debug
-        puts "Would have tweeted:", status
+        puts "Would have tweeted: ", status
       else
-        resource = RestClient::Resource.new 'http://twitter.com/statuses/update.xml', username, password
-        resource.post(:status => status, :source => 'tweetgem', :content_type => 'application/xml', :accept => 'application/xml')
+        resource = RestClient::Resource.new 'http://twitter.com/statuses/update.xml', credentials[:username], credentials[:password]
+        resource.post(:status => status, :content_type => 'application/xml', :accept => 'application/xml',
+                      :source => source || credentials[:source])
       end
       puts "#{len} chars" + (len == 140 ? "!\nYou rock!" : '.')
     end
     
-    def get_credentials!
-      abort "You must create a #{CONFIG_FILE} file to use this CLI." unless File.exist?(CONFIG_FILE)
-      config = YAML.load(File.read(CONFIG_FILE)).symbolize_keys
-      @username, @password, @debug = config[:username], config[:password], config[:debug]
-      warn "  debug mode (not really posting)" if @debug
+    def credentials
+      @credentials ||= begin
+                         abort "You must create a #{CONFIG_FILE} file to use this CLI." unless File.exist?(CONFIG_FILE)
+                         warn "  debug mode (not really posting)" if @debug
+                         config = YAML.load(File.read(CONFIG_FILE)).symbolize_keys
+                         config[:source] ||= 'tweetgem'
+                         config
+                       end
     end
   end
 end
