@@ -2,14 +2,40 @@
 
 THIS_FILE = File.symlink?(__FILE__) ? File.readlink(__FILE__) : __FILE__
 require "#{File.dirname(THIS_FILE)}/../lib/tweet"
+require 'optparse'
 
-case ARGV.first
-when nil, "--help", "-h"
-  abort "Usage: tweet STATUS\nRequires a ~/.tweet YAML file with two keys: username and password."
-when "-v", "--version"
-  puts Gem.loaded_specs["tweet"].version
-when '-c', '--count'
-  Tweet.count(ARGV.join(' '))
-else
-  Tweet.create_status(ARGV.join(' '))
+options = {}
+opts = OptionParser.new do |opts|
+  opts.banner = "Usage: #$0 [options] STATUS"
+  opts.separator ""
+  opts.separator "Requires a ~/.tweet YAML file with two keys: username and password."
+  opts.separator ""
+  opts.separator "Specific options:"
+  opts.on('-s', '--source SOURCE', "Tweet from SOURCE") do |source|
+    options[:source] = source
+  end
+  opts.on_tail("-c", "--count", "Show tweet size and exit") do
+    Tweet.count(ARGV.join(' '))
+    exit
+  end
+  opts.on_tail("-v", "--version", "Show gem version and exit") do
+    specs = Gem.loaded_specs["tweet"]
+    specs ? puts(specs.version) : puts("Not a gem")
+    exit
+  end
+  opts.on_tail("-h", "--help", "Show this message") do
+    puts opts
+    exit
+  end
+
+  begin
+    opts.parse!(ARGV)
+  rescue OptionParser::InvalidOption => e
+    puts e.message
+    puts
+    puts opts
+    exit
+  end
+
+  Tweet.create_status(ARGV.join(' '), options[:source])
 end
